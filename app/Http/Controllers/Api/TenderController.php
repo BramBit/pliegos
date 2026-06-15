@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Tender;
 use App\Models\TenderSearch;
 use App\Services\Secop\SecopService;
+use App\Jobs\GenerateTenderEmbedding;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -13,7 +14,8 @@ class TenderController extends Controller
 {
     public function __construct(
         private SecopService $secopService
-    ) {}
+    ) {
+    }
 
     public function search(Request $request, TenderSearch $tenderSearch): JsonResponse
     {
@@ -24,11 +26,15 @@ class TenderController extends Controller
         $existingCount = Tender::where('sector', $tenderSearch->sector)->count();
 
         if ($existingCount === 0) {
-            $this->secopService->fetchAndStore(
+            $newTenders = $this->secopService->fetchAndStore(
                 sector: $tenderSearch->sector,
                 budgetMin: $tenderSearch->budget_min,
                 budgetMax: $tenderSearch->budget_max,
             );
+
+            foreach ($newTenders as $tender) {
+                GenerateTenderEmbedding::dispatch($tender->id);
+            }
         }
 
         $tenders = Tender::where('sector', $tenderSearch->sector)
@@ -40,8 +46,8 @@ class TenderController extends Controller
         $tenderSearch->update(['status' => 'completed']);
 
         return response()->json([
-            'search'  => $tenderSearch,
-            'count'   => $tenders->count(),
+            'search' => $tenderSearch,
+            'count' => $tenders->count(),
             'tenders' => $tenders,
         ]);
     }
