@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: pliegos_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pliegos
+      POSTGRES_USER: pliegos_user
+      POSTGRES_PASSWORD: pliegos_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pliegos_data:/var/lib/postgresql/data
+
+volumes:
+  pliegos_data:
