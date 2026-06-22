@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SemanticSearchController;
 use App\Http\Controllers\Api\TenderSearchController;
 use App\Http\Controllers\Api\TenderController;
@@ -43,4 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Semantic searches
     Route::post('/searches/{tenderSearch}/ask', [SemanticSearchController::class, 'ask']);
+
+    // Report
+    Route::post('/searches/{tenderSearch}/report', [ReportController::class, 'generate']);
 });
